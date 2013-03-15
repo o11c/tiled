@@ -60,7 +60,7 @@ public:
     QModelIndex index(int row, int column,
                       const QModelIndex &parent = QModelIndex()) const;
 
-    QModelIndex index(Tileset *tileset) const;
+    QModelIndex index(QSharedPointer<Tileset> tileset) const;
     QModelIndex index(Terrain *terrain) const;
 
     QModelIndex parent(const QModelIndex &child) const;
@@ -97,15 +97,15 @@ public:
     /**
      * Returns the tileset at the given \a index, or 0 if there is no tileset.
      */
-    Tileset *tilesetAt(const QModelIndex &index) const;
+    QSharedPointer<Tileset> tilesetAt(const QModelIndex &index) const;
 
     /**
      * Returns the terrain at the given \a index, or 0 if there is no terrain.
      */
     Terrain *terrainAt(const QModelIndex &index) const;
 
-    void insertTerrain(Tileset *tileset, int index, Terrain *terrain);
-    Terrain *takeTerrainAt(Tileset *tileset, int index);
+    void insertTerrain(QSharedPointer<Tileset> tileset, int index, Terrain *terrain);
+    Terrain *takeTerrainAt(QSharedPointer<Tileset> tileset, int index);
     void setTerrainName(Tileset *tileset, int index, const QString &name);
     void setTerrainImage(Tileset *tileset, int index, int tileId);
 
@@ -123,7 +123,7 @@ private slots:
     void tilesetAdded();
     void tilesetAboutToBeRemoved(int index);
     void tilesetRemoved();
-    void tilesetNameChanged(Tileset *tileset);
+    void tilesetNameChanged(QSharedPointer<Tileset> tileset);
 
 private:
     void emitTerrainChanged(Terrain *terrain);

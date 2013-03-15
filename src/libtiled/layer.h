@@ -168,7 +168,7 @@ public:
     /**
      * Computes and returns the set of tilesets used by this layer.
      */
-    virtual QSet<Tileset*> usedTilesets() const = 0;
+    virtual QSet<QSharedPointer<Tileset> > usedTilesets() const = 0;
 
     /**
      * Returns whether this layer is referencing the given tileset.

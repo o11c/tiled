@@ -43,7 +43,7 @@ class SetTerrainImage : public QUndoCommand
 {
 public:
     SetTerrainImage(MapDocument *mapDocument,
-                    Tileset *tileset,
+                    QSharedPointer<Tileset> tileset,
                     int terrainId,
                     int tileId)
         : QUndoCommand(QCoreApplication::translate("Undo Commands",
@@ -56,14 +56,14 @@ public:
     {}
 
     void undo()
-    { mTerrainModel->setTerrainImage(mTileset, mTerrainId, mOldImageTileId); }
+    { mTerrainModel->setTerrainImage(mTileset.data(), mTerrainId, mOldImageTileId); }
 
     void redo()
-    { mTerrainModel->setTerrainImage(mTileset, mTerrainId, mNewImageTileId); }
+    { mTerrainModel->setTerrainImage(mTileset.data(), mTerrainId, mNewImageTileId); }
 
 private:
     TerrainModel *mTerrainModel;
-    Tileset *mTileset;
+    QSharedPointer<Tileset> mTileset;
     int mTerrainId;
     int mOldImageTileId;
     int mNewImageTileId;
@@ -73,7 +73,7 @@ private:
 
 
 EditTerrainDialog::EditTerrainDialog(MapDocument *mapDocument,
-                                     Tileset *tileset,
+                                     QSharedPointer<Tileset> tileset,
                                      QWidget *parent)
     : QDialog(parent)
     , mUi(new Ui::EditTerrainDialog)
@@ -182,7 +182,7 @@ void EditTerrainDialog::eraseTerrainToggled(bool checked)
 
 void EditTerrainDialog::addTerrainType(Tile *tile)
 {
-    Terrain *terrain = new Terrain(mTileset->terrainCount(), mTileset,
+    Terrain *terrain = new Terrain(mTileset->terrainCount(), mTileset.data(),
                                    QString(), tile ? tile->id() : -1);
     terrain->setName(tr("New Terrain"));
 
@@ -255,7 +255,7 @@ void EditTerrainDialog::setTerrainImage(Tile *tile)
 
     Terrain *terrain = mTerrainModel->terrainAt(currentIndex);
     mMapDocument->undoStack()->push(new SetTerrainImage(mMapDocument,
-                                                        terrain->tileset(),
+                                                        terrain->tileset()->hackity_hack,
                                                         terrain->id(),
                                                         tile->id()));
 }

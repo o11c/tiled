@@ -44,10 +44,10 @@ class TerrainModel;
 class EditTerrainDialog : public QDialog
 {
     Q_OBJECT
-    
+
 public:
     explicit EditTerrainDialog(MapDocument *mapDocument,
-                               Tileset *tileset,
+                               QSharedPointer<Tileset> tileset,
                                QWidget *parent = 0);
     ~EditTerrainDialog();
 
@@ -60,12 +60,12 @@ private slots:
     void setTerrainImage(Tile *tile);
 
     void updateUndoButton();
-    
+
 private:
     Ui::EditTerrainDialog *mUi;
     MapDocument *mMapDocument;
     int mInitialUndoStackIndex;
-    Tileset *mTileset;
+    QSharedPointer<Tileset> mTileset;
     TerrainModel *mTerrainModel;
     QShortcut *mUndoShortcut;
     QShortcut *mRedoShortcut;

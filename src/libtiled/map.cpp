@@ -148,17 +148,17 @@ Layer *Map::takeLayerAt(int index)
     return layer;
 }
 
-void Map::addTileset(Tileset *tileset)
+void Map::addTileset(QSharedPointer<Tileset> tileset)
 {
     mTilesets.append(tileset);
 }
 
-void Map::insertTileset(int index, Tileset *tileset)
+void Map::insertTileset(int index, QSharedPointer<Tileset> tileset)
 {
     mTilesets.insert(index, tileset);
 }
 
-int Map::indexOfTileset(Tileset *tileset) const
+int Map::indexOfTileset(QSharedPointer<Tileset> tileset) const
 {
     return mTilesets.indexOf(tileset);
 }
@@ -168,13 +168,13 @@ void Map::removeTilesetAt(int index)
     mTilesets.removeAt(index);
 }
 
-void Map::replaceTileset(Tileset *oldTileset, Tileset *newTileset)
+void Map::replaceTileset(QSharedPointer<Tileset> oldTileset, QSharedPointer<Tileset> newTileset)
 {
     const int index = mTilesets.indexOf(oldTileset);
     Q_ASSERT(index != -1);
 
     foreach (Layer *layer, mLayers)
-        layer->replaceReferencesToTileset(oldTileset, newTileset);
+        layer->replaceReferencesToTileset(oldTileset.data(), newTileset.data());
 
     mTilesets.replace(index, newTileset);
 }

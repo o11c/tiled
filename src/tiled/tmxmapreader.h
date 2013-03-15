@@ -24,6 +24,7 @@
 #include "mapreaderinterface.h"
 
 #include <QCoreApplication>
+#include <QSharedPointer>
 #include <QString>
 
 namespace Tiled {
@@ -50,7 +51,7 @@ public:
      */
     Map *fromByteArray(const QByteArray &data);
 
-    Tileset *readTileset(const QString &fileName);
+    QSharedPointer<Tileset> readTileset(const QString &fileName);
 
     QString nameFilter() const { return tr("Tiled map files (*.tmx)"); }
 

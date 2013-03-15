@@ -66,10 +66,9 @@ Map *VariantToMapConverter::toMap(const QVariant &variant,
             mMap->setBackgroundColor(QColor(bgColor));
 
     foreach (const QVariant &tilesetVariant, variantMap["tilesets"].toList()) {
-        Tileset *tileset = toTileset(tilesetVariant);
+        QSharedPointer<Tileset> tileset = toTileset(tilesetVariant)->hackity_hack;
         if (!tileset) {
             // Delete tilesets loaded so far and the map
-            qDeleteAll(mMap->tilesets());
             delete mMap;
             return 0;
         }
@@ -98,7 +97,7 @@ Properties VariantToMapConverter::toProperties(const QVariant &variant)
     return properties;
 }
 
-Tileset *VariantToMapConverter::toTileset(const QVariant &variant)
+QSharedPointer<Tileset> VariantToMapConverter::toTileset(const QVariant &variant)
 {
     const QVariantMap variantMap = variant.toMap();
 
@@ -114,12 +113,13 @@ Tileset *VariantToMapConverter::toTileset(const QVariant &variant)
 
     if (tileWidth <= 0 || tileHeight <= 0 || firstGid == 0) {
         mError = tr("Invalid tileset parameters for tileset '%1'").arg(name);
-        return 0;
+        return QSharedPointer<Tileset>();
     }
 
-    Tileset *tileset = new Tileset(name,
+    QSharedPointer<Tileset> tileset = QSharedPointer<Tileset>(new Tileset(name,
                                    tileWidth, tileHeight,
-                                   spacing, margin);
+                                   spacing, margin));
+    tileset->hackity_hack = tileset;
     tileset->setTileOffset(QPoint(tileOffsetX, tileOffsetY));
 
     const QString trans = variantMap["transparentcolor"].toString();
@@ -136,8 +136,7 @@ Tileset *VariantToMapConverter::toTileset(const QVariant &variant)
 
     if (!tileset->loadFromImage(QImage(imageSource), imageSource)) {
         mError = tr("Error loading tileset image:\n'%1'").arg(imageSource);
-        delete tileset;
-        return 0;
+        return QSharedPointer<Tileset>();
     }
 
     tileset->setProperties(toProperties(variantMap["properties"]));

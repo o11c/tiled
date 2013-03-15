@@ -168,7 +168,7 @@ static Terrain *firstTerrain(MapDocument *mapDocument)
     if (!mapDocument)
         return 0;
 
-    foreach (Tileset *tileset, mapDocument->map()->tilesets())
+    foreach (QSharedPointer<Tileset> tileset, mapDocument->map()->tilesets())
         if (tileset->terrainCount() > 0)
             return tileset->terrain(0);
 

@@ -29,18 +29,15 @@ using namespace Tiled::Internal;
 
 AddRemoveTileset::AddRemoveTileset(MapDocument *mapDocument,
                                    int index,
-                                   Tileset *tileset)
+                                   QSharedPointer<Tileset> tileset)
     : mMapDocument(mapDocument)
     , mTileset(tileset)
     , mIndex(index)
 {
-    // Make sure the tileset manager keeps this tileset around
-    TilesetManager::instance()->addReference(mTileset);
 }
 
 AddRemoveTileset::~AddRemoveTileset()
 {
-    TilesetManager::instance()->removeReference(mTileset);
 }
 
 void AddRemoveTileset::removeTileset()
@@ -54,7 +51,7 @@ void AddRemoveTileset::addTileset()
 }
 
 
-AddTileset::AddTileset(MapDocument *mapDocument, Tileset *tileset)
+AddTileset::AddTileset(MapDocument *mapDocument, QSharedPointer<Tileset> tileset)
     : AddRemoveTileset(mapDocument,
                        mapDocument->map()->tilesets().size(),
                        tileset)

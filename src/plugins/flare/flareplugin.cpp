@@ -117,8 +117,9 @@ Tiled::Map *FlarePlugin::read(const QString &fileName)
                     tilesetheight = list[2].toInt();
                 }
 
-                Tileset *tileset = new Tileset(QFileInfo(absoluteSource).fileName(),
-                                               tilesetwidth, tilesetheight);
+                QSharedPointer<Tileset> tileset = QSharedPointer<Tileset>(new Tileset(QFileInfo(absoluteSource).fileName(),
+                                               tilesetwidth, tilesetheight));
+                tileset->hackity_hack = tileset;
                 bool ok = tileset->loadFromImage(QImage(absoluteSource), absoluteSource);
 
                 if (!tileset || !ok) {
@@ -286,7 +287,7 @@ bool FlarePlugin::write(const Tiled::Map *map, const QString &fileName)
     QDir mapDir = QFileInfo(fileName).absoluteDir();
 
     out << "[tilesets]\n";
-    foreach (Tileset *ts, map->tilesets()) {
+    foreach (QSharedPointer<Tileset> ts, map->tilesets()) {
         const QString &imageSource = ts->imageSource();
         QString source = mapDir.relativeFilePath(imageSource);
         out << "tileset=" << source

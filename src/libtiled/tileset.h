@@ -55,6 +55,7 @@ class Terrain;
 class TILEDSHARED_EXPORT Tileset : public Object
 {
 public:
+    QSharedPointer<Tileset> hackity_hack;
     /**
      * Constructor.
      *
@@ -211,7 +212,7 @@ public:
      * This checks if there is a similar tileset in the given list.
      * It is needed for replacing this tileset by its similar copy.
      */
-    Tileset *findSimilarTileset(const QList<Tileset*> &tilesets) const;
+    QSharedPointer<Tileset> findSimilarTileset(const QList<QSharedPointer<Tileset> > &tilesets) const;
 
     /**
      * Returns the file name of the external image that contains the tiles in

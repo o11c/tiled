@@ -200,7 +200,7 @@ public:
     /**
      * Computes and returns the set of tilesets used by this tile layer.
      */
-    QSet<Tileset*> usedTilesets() const;
+    QSet<QSharedPointer<Tileset> > usedTilesets() const;
 
     /**
      * Returns whether this tile layer is referencing the given tileset.

@@ -22,6 +22,7 @@
 
 #include "mapdocument.h"
 #include "tile.h"
+#include "tileset.h"
 
 #include <QCoreApplication>
 

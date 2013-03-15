@@ -23,6 +23,9 @@
 #define TILESETMODEL_H
 
 #include <QAbstractListModel>
+#include <QSharedPointer>
+
+#include "../libtiled/tileset.h"
 
 namespace Tiled {
 
@@ -51,7 +54,7 @@ public:
      *
      * @param tileset the initial tileset to display
      */
-    TilesetModel(Tileset *tileset, QObject *parent = 0);
+    TilesetModel(QSharedPointer<Tileset> tileset, QObject *parent = 0);
 
     /**
      * Returns the number of rows.
@@ -91,12 +94,12 @@ public:
     /**
      * Returns the tileset associated with this model.
      */
-    Tileset *tileset() const { return mTileset; }
+    QSharedPointer<Tileset> tileset() const { return mTileset; }
 
     /**
      * Sets the tileset associated with this model.
      */
-    void setTileset(Tileset *tileset);
+    void setTileset(QSharedPointer<Tileset> tileset);
 
     /**
      * Performs a reset on the model.
@@ -116,7 +119,7 @@ public slots:
     void tilesChanged(const QList<Tile*> &tiles);
 
 private:
-    Tileset *mTileset;
+    QSharedPointer<Tileset> mTileset;
 };
 
 } // namespace Internal

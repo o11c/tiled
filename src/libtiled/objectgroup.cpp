@@ -95,13 +95,13 @@ bool ObjectGroup::isEmpty() const
     return mObjects.isEmpty();
 }
 
-QSet<Tileset*> ObjectGroup::usedTilesets() const
+QSet<QSharedPointer<Tileset> > ObjectGroup::usedTilesets() const
 {
-    QSet<Tileset*> tilesets;
+    QSet<QSharedPointer<Tileset> > tilesets;
 
     foreach (const MapObject *object, mObjects)
         if (const Tile *tile = object->cell().tile)
-            tilesets.insert(tile->tileset());
+            tilesets.insert(tile->tileset()->hackity_hack);
 
     return tilesets;
 }

@@ -982,14 +982,9 @@ void MainWindow::paste()
 
     // We can currently only handle maps with a single layer
     if (map->layerCount() != 1) {
-        // Need to clean up the tilesets since they didn't get an owner
-        qDeleteAll(map->tilesets());
         delete map;
         return;
     }
-
-    TilesetManager *tilesetManager = TilesetManager::instance();
-    tilesetManager->addReferences(map->tilesets());
 
     mMapDocument->unifyTilesets(map);
     Layer *layer = map->layerAt(0);
@@ -1045,7 +1040,6 @@ void MainWindow::paste()
         }
     }
 
-    tilesetManager->removeReferences(map->tilesets());
     delete map;
 }
 
@@ -1116,7 +1110,7 @@ bool MainWindow::newTileset(const QString &path)
     newTileset.setTileWidth(map->tileWidth());
     newTileset.setTileHeight(map->tileHeight());
 
-    if (Tileset *tileset = newTileset.createTileset()) {
+    if (QSharedPointer<Tileset> tileset = newTileset.createTileset()) {
         mMapDocument->undoStack()->push(new AddTileset(mMapDocument, tileset));
         prefs->setLastPath(Preferences::ImageFile, tileset->imageSource());
         return true;
@@ -1138,7 +1132,7 @@ void MainWindow::reloadTilesets()
         return;
 
     TilesetManager *tilesetManager = TilesetManager::instance();
-    foreach (Tileset *tileset, map->tilesets())
+    foreach (QSharedPointer<Tileset> tileset, map->tilesets())
         tilesetManager->forceTilesetReload(tileset);
 }
 
@@ -1156,7 +1150,7 @@ void MainWindow::addExternalTileset()
         return;
 
     TmxMapReader reader;
-    if (Tileset *tileset = reader.readTileset(fileName)) {
+    if (QSharedPointer<Tileset> tileset = reader.readTileset(fileName)) {
         mMapDocument->undoStack()->push(new AddTileset(mMapDocument, tileset));
     } else {
         QMessageBox::critical(this, tr("Error Reading Tileset"),

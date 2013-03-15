@@ -30,6 +30,7 @@
 #define TILED_GIDMAPPER_H
 
 #include "tilelayer.h"
+#include "tileset.h"
 
 #include <QMap>
 
@@ -50,12 +51,12 @@ public:
     /**
      * Constructor that initializes the gid mapper using the given \a tilesets.
      */
-    GidMapper(const QList<Tileset *> &tilesets);
+    GidMapper(const QList<QSharedPointer<Tileset> > &tilesets);
 
     /**
      * Insert the given \a tileset with \a firstGid as its first global ID.
      */
-    void insert(unsigned firstGid, Tileset *tileset)
+    void insert(unsigned firstGid, QSharedPointer<Tileset> tileset)
     { mFirstGidToTileset.insert(firstGid, tileset); }
 
     /**
@@ -85,11 +86,11 @@ public:
      * changed, the tile indexes will be adjusted automatically when using
      * gidToCell().
      */
-    void setTilesetWidth(const Tileset *tileset, int width);
+    void setTilesetWidth(QSharedPointer<const Tileset> tileset, int width);
 
 private:
-    QMap<unsigned, Tileset*> mFirstGidToTileset;
-    QMap<const Tileset*, int> mTilesetColumnCounts;
+    QMap<unsigned, QSharedPointer<Tileset> > mFirstGidToTileset;
+    QMap<QSharedPointer<const Tileset>, int> mTilesetColumnCounts;
 };
 
 } // namespace Tiled

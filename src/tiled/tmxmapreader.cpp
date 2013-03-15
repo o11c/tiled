@@ -51,11 +51,11 @@ protected:
      * Overridden in order to check with the TilesetManager whether the tileset
      * is already loaded.
      */
-    Tileset *readExternalTileset(const QString &source, QString *error)
+    QSharedPointer<Tileset> readExternalTileset(const QString &source, QString *error)
     {
         // Check if this tileset is already loaded
         TilesetManager *manager = TilesetManager::instance();
-        Tileset *tileset = manager->findTileset(source);
+        QSharedPointer<Tileset> tileset = manager->findTileset(source);
 
         // If not, try to load it
         if (!tileset)
@@ -95,12 +95,12 @@ Map *TmxMapReader::fromByteArray(const QByteArray &data)
     return map;
 }
 
-Tileset *TmxMapReader::readTileset(const QString &fileName)
+QSharedPointer<Tileset> TmxMapReader::readTileset(const QString &fileName)
 {
     mError.clear();
 
     EditorMapReader reader;
-    Tileset *tileset = reader.readTileset(fileName);
+    QSharedPointer<Tileset> tileset = reader.readTileset(fileName);
     if (!tileset)
         mError = reader.errorString();
 

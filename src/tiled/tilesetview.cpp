@@ -277,7 +277,7 @@ QSize TileDelegate::sizeHint(const QStyleOptionViewItem & /* option */,
                              const QModelIndex &index) const
 {
     const TilesetModel *m = static_cast<const TilesetModel*>(index.model());
-    const Tileset *tileset = m->tileset();
+    QSharedPointer<const Tileset> tileset = m->tileset();
     const qreal zoom = mTilesetView->scale();
     const int extra = mTilesetView->drawGrid() ? 1 : 0;
 

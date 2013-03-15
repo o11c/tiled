@@ -58,7 +58,7 @@ public:
      */
     ~ImageLayer();
 
-    QSet<Tileset*> usedTilesets() const { return QSet<Tileset*>(); }
+    QSet<QSharedPointer<Tileset> > usedTilesets() const { return QSet<QSharedPointer<Tileset> >(); }
     bool referencesTileset(const Tileset *) const { return false; }
     void replaceReferencesToTileset(Tileset *, Tileset *) {}
 

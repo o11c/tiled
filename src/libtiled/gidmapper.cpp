@@ -43,10 +43,10 @@ GidMapper::GidMapper()
 {
 }
 
-GidMapper::GidMapper(const QList<Tileset *> &tilesets)
+GidMapper::GidMapper(const QList<QSharedPointer<Tileset> > &tilesets)
 {
     unsigned firstGid = 1;
-    foreach (Tileset *tileset, tilesets) {
+    foreach (QSharedPointer<Tileset> tileset, tilesets) {
         insert(firstGid, tileset);
         firstGid += tileset->tileCount();
     }
@@ -72,10 +72,10 @@ Cell GidMapper::gidToCell(unsigned gid, bool &ok) const
         ok = false;
     } else {
         // Find the tileset containing this tile
-        QMap<unsigned, Tileset*>::const_iterator i = mFirstGidToTileset.upperBound(gid);
+        QMap<unsigned, QSharedPointer<Tileset> >::const_iterator i = mFirstGidToTileset.upperBound(gid);
         --i; // Navigate one tileset back since upper bound finds the next
         int tileId = gid - i.key();
-        const Tileset *tileset = i.value();
+        QSharedPointer<const Tileset> tileset = i.value();
 
         if (tileset) {
             const int columnCount = mTilesetColumnCounts.value(tileset);
@@ -105,8 +105,8 @@ unsigned GidMapper::cellToGid(const Cell &cell) const
     const Tileset *tileset = cell.tile->tileset();
 
     // Find the first GID for the tileset
-    QMap<unsigned, Tileset*>::const_iterator i = mFirstGidToTileset.begin();
-    QMap<unsigned, Tileset*>::const_iterator i_end = mFirstGidToTileset.end();
+    QMap<unsigned, QSharedPointer<Tileset> >::const_iterator i = mFirstGidToTileset.begin();
+    QMap<unsigned, QSharedPointer<Tileset> >::const_iterator i_end = mFirstGidToTileset.end();
     while (i != i_end && i.value() != tileset)
         ++i;
 
@@ -124,7 +124,7 @@ unsigned GidMapper::cellToGid(const Cell &cell) const
     return gid;
 }
 
-void GidMapper::setTilesetWidth(const Tileset *tileset, int width)
+void GidMapper::setTilesetWidth(QSharedPointer<const Tileset> tileset, int width)
 {
     if (tileset->tileWidth() == 0)
         return;

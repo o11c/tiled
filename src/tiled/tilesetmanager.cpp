@@ -66,18 +66,18 @@ void TilesetManager::deleteInstance()
     mInstance = 0;
 }
 
-Tileset *TilesetManager::findTileset(const QString &fileName) const
+QSharedPointer<Tileset> TilesetManager::findTileset(const QString &fileName) const
 {
-    foreach (Tileset *tileset, tilesets())
+    foreach (QSharedPointer<Tileset> tileset, tilesets())
         if (tileset->fileName() == fileName)
             return tileset;
 
-    return 0;
+    return QSharedPointer<Tileset>();
 }
 
-Tileset *TilesetManager::findTileset(const TilesetSpec &spec) const
+QSharedPointer<Tileset> TilesetManager::findTileset(const TilesetSpec &spec) const
 {
-    foreach (Tileset *tileset, tilesets()) {
+    foreach (QSharedPointer<Tileset> tileset, tilesets()) {
         if (tileset->imageSource() == spec.imageSource
             && tileset->tileWidth() == spec.tileWidth
             && tileset->tileHeight() == spec.tileHeight
@@ -88,52 +88,15 @@ Tileset *TilesetManager::findTileset(const TilesetSpec &spec) const
         }
     }
 
-    return 0;
+    return QSharedPointer<Tileset>();
 }
 
-void TilesetManager::addReference(Tileset *tileset)
+QList<QSharedPointer<Tileset> > TilesetManager::tilesets() const
 {
-    if (mTilesets.contains(tileset)) {
-        mTilesets[tileset]++;
-    } else {
-        mTilesets.insert(tileset, 1);
-        if (!tileset->imageSource().isEmpty())
-            mWatcher->addPath(tileset->imageSource());
-    }
+    return mTilesets.values();
 }
 
-void TilesetManager::removeReference(Tileset *tileset)
-{
-    Q_ASSERT(mTilesets.value(tileset) > 0);
-    mTilesets[tileset]--;
-
-    if (mTilesets.value(tileset) == 0) {
-        mTilesets.remove(tileset);
-        if (!tileset->imageSource().isEmpty())
-            mWatcher->removePath(tileset->imageSource());
-
-        delete tileset;
-    }
-}
-
-void TilesetManager::addReferences(const QList<Tileset*> &tilesets)
-{
-    foreach (Tileset *tileset, tilesets)
-        addReference(tileset);
-}
-
-void TilesetManager::removeReferences(const QList<Tileset*> &tilesets)
-{
-    foreach (Tileset *tileset, tilesets)
-        removeReference(tileset);
-}
-
-QList<Tileset*> TilesetManager::tilesets() const
-{
-    return mTilesets.keys();
-}
-
-void TilesetManager::forceTilesetReload(Tileset *tileset)
+void TilesetManager::forceTilesetReload(QSharedPointer<Tileset> tileset)
 {
     if (!mTilesets.contains(tileset))
         return;
@@ -165,7 +128,7 @@ void TilesetManager::fileChanged(const QString &path)
 
 void TilesetManager::fileChangedTimeout()
 {
-    foreach (Tileset *tileset, tilesets()) {
+    foreach (QSharedPointer<Tileset> tileset, tilesets()) {
         QString fileName = tileset->imageSource();
         if (mChangedFiles.contains(fileName))
             if (tileset->loadFromImage(QImage(fileName), fileName))

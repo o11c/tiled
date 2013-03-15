@@ -403,16 +403,16 @@ bool AutoMapper::setupCorrectIndexes()
 // because here mAddedTileset is modified.
 bool AutoMapper::setupTilesets(Map *src, Map *dst)
 {
-    QList<Tileset*> existingTilesets = dst->tilesets();
+    QList<QSharedPointer<Tileset> > existingTilesets = dst->tilesets();
 
     // Add tilesets that are not yet part of dst map
-    foreach (Tileset *tileset, src->tilesets()) {
+    foreach (QSharedPointer<Tileset> tileset, src->tilesets()) {
         if (existingTilesets.contains(tileset))
             continue;
 
         QUndoStack *undoStack = mMapDocument->undoStack();
 
-        Tileset *replacement = tileset->findSimilarTileset(existingTilesets);
+        QSharedPointer<Tileset> replacement = tileset->findSimilarTileset(existingTilesets);
         if (!replacement) {
             mAddedTilesets.append(tileset);
             undoStack->push(new AddTileset(mMapDocument, tileset));
@@ -432,10 +432,6 @@ bool AutoMapper::setupTilesets(Map *src, Map *dst)
                                                  properties));
         }
         src->replaceTileset(tileset, replacement);
-
-        TilesetManager *tilesetManager = TilesetManager::instance();
-        tilesetManager->addReference(replacement);
-        tilesetManager->removeReference(tileset);
     }
     return true;
 }
@@ -866,8 +862,8 @@ void AutoMapper::cleanAll()
 
 void AutoMapper::cleanTilesets()
 {
-    foreach (Tileset *tileset, mAddedTilesets) {
-        if (mMapWork->isTilesetUsed(tileset))
+    foreach (QSharedPointer<Tileset> tileset, mAddedTilesets) {
+        if (mMapWork->isTilesetUsed(tileset.data()))
             continue;
 
         const int layerIndex = mMapWork->indexOfTileset(tileset);
@@ -905,9 +901,6 @@ void AutoMapper::cleanUpRulesMap()
     // mMapRules can be empty, when in prepareLoad the very first stages fail.
     if (!mMapRules)
         return;
-
-    TilesetManager *tilesetManager = TilesetManager::instance();
-    tilesetManager->removeReferences(mMapRules->tilesets());
 
     delete mMapRules;
     mMapRules = 0;

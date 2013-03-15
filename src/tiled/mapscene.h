@@ -29,6 +29,8 @@
 #include <QMap>
 #include <QSet>
 
+#include "../libtiled/tileset.h"
+
 namespace Tiled {
 
 class Layer;
@@ -152,7 +154,7 @@ private slots:
     void currentLayerIndexChanged();
 
     void mapChanged();
-    void tilesetChanged(Tileset *tileset);
+    void tilesetChanged(QSharedPointer<Tileset> tileset);
 
     void layerAdded(int index);
     void layerRemoved(int index);

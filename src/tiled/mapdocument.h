@@ -25,6 +25,7 @@
 
 #include "layer.h"
 #include "tiled.h"
+#include "tileset.h"
 
 #include <QList>
 #include <QObject>
@@ -155,11 +156,11 @@ public:
     void removeLayer(int index);
     void toggleOtherLayers(int index);
 
-    void insertTileset(int index, Tileset *tileset);
+    void insertTileset(int index, QSharedPointer<Tileset> tileset);
     void removeTilesetAt(int index);
     void moveTileset(int from, int to);
     void setTilesetFileName(Tileset *tileset, const QString &fileName);
-    void setTilesetName(Tileset *tileset, const QString &name);
+    void setTilesetName(QSharedPointer<Tileset> tileset, const QString &name);
 
     /**
      * Returns the layer model. Can be used to modify the layer stack of the
@@ -302,12 +303,12 @@ signals:
     void tileTerrainChanged(const QList<Tile*> &tiles);
 
     void tilesetAboutToBeAdded(int index);
-    void tilesetAdded(int index, Tileset *tileset);
+    void tilesetAdded(int index, QSharedPointer<Tileset> tileset);
     void tilesetAboutToBeRemoved(int index);
-    void tilesetRemoved(Tileset *tileset);
+    void tilesetRemoved(QSharedPointer<Tileset> tileset);
     void tilesetMoved(int from, int to);
     void tilesetFileNameChanged(Tileset *tileset);
-    void tilesetNameChanged(Tileset *tileset);
+    void tilesetNameChanged(QSharedPointer<Tileset> tileset);
 
     void objectsAdded(const QList<MapObject*> &objects);
     void objectsAboutToBeRemoved(const QList<MapObject*> &objects);

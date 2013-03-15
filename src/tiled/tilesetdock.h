@@ -27,6 +27,8 @@
 #include <QList>
 #include <QMap>
 
+#include "../libtiled/tileset.h"
+
 class QComboBox;
 class QStackedWidget;
 class QTabBar;
@@ -102,11 +104,11 @@ private slots:
     void updateActions();
     void updateCurrentTiles();
 
-    void tilesetAdded(int index, Tileset *tileset);
-    void tilesetChanged(Tileset *tileset);
-    void tilesetRemoved(Tileset *tileset);
+    void tilesetAdded(int index, QSharedPointer<Tileset> tileset);
+    void tilesetChanged(QSharedPointer<Tileset> tileset);
+    void tilesetRemoved(QSharedPointer<Tileset> tileset);
     void tilesetMoved(int from, int to);
-    void tilesetNameChanged(Tileset *tileset);
+    void tilesetNameChanged(QSharedPointer<Tileset> tileset);
 
     void removeTileset();
     void removeTileset(int index);
@@ -129,12 +131,12 @@ private:
     void setCurrentTiles(TileLayer *tiles);
     void retranslateUi();
 
-    Tileset *currentTileset() const;
+    QSharedPointer<Tileset> currentTileset() const;
     TilesetView *currentTilesetView() const;
     TilesetView *tilesetViewAt(int index) const;
 
     MapDocument *mMapDocument;
-    QList<Tileset*> mTilesets;
+    QList<QSharedPointer<Tileset> > mTilesets;
     QTabBar *mTabBar;
     QStackedWidget *mViewStack;
     QToolBar *mToolBar;

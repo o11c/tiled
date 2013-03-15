@@ -75,14 +75,14 @@ private:
 
     // MapReaderInterface support.
     void loadTilesetsFromResources(Tiled::Map *map,
-                                   QList<Tiled::Tileset *> &typeTilesets,
-                                   QList<Tiled::Tileset *> &tileIndexTilesets);
-    Tiled::Tileset *loadTilesetFromResource(const QString &name);
+                                   QList<QSharedPointer<Tiled::Tileset> > &typeTilesets,
+                                   QList<QSharedPointer<Tiled::Tileset> > &tileIndexTilesets);
+    QSharedPointer<Tiled::Tileset> loadTilesetFromResource(const QString &name);
     void addTilesetsToMap(Tiled::Map *map,
-                          const QList<Tiled::Tileset *> &tilesets);
-    Tiled::Tileset *tilesetForLayer(int type, int tileIndex,
-                                    const QList<Tiled::Tileset *> &typeTilesets,
-                                    const QList<Tiled::Tileset *> &tileIndexTilesets);
+                          const QList<QSharedPointer<Tiled::Tileset> > &tilesets);
+    QSharedPointer<Tiled::Tileset> tilesetForLayer(int type, int tileIndex,
+                                    const QList<QSharedPointer<Tiled::Tileset> > &typeTilesets,
+                                    const QList<QSharedPointer<Tiled::Tileset> > &tileIndexTilesets);
     QString layerTypeToName(char type);
 
     // MapWriterInterface support.

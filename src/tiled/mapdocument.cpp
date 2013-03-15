@@ -100,18 +100,10 @@ MapDocument::MapDocument(Map *map, const QString &fileName):
             SLOT(onObjectsRemoved(QList<MapObject*>)));
 
     connect(mUndoStack, SIGNAL(cleanChanged(bool)), SIGNAL(modifiedChanged()));
-
-    // Register tileset references
-    TilesetManager *tilesetManager = TilesetManager::instance();
-    tilesetManager->addReferences(mMap->tilesets());
 }
 
 MapDocument::~MapDocument()
 {
-    // Unregister tileset references
-    TilesetManager *tilesetManager = TilesetManager::instance();
-    tilesetManager->removeReferences(mMap->tilesets());
-
     delete mRenderer;
     delete mMap;
 }
@@ -417,12 +409,10 @@ void MapDocument::toggleOtherLayers(int index)
  * Adds a tileset to this map at the given \a index. Emits the appropriate
  * signal.
  */
-void MapDocument::insertTileset(int index, Tileset *tileset)
+void MapDocument::insertTileset(int index, QSharedPointer<Tileset> tileset)
 {
     emit tilesetAboutToBeAdded(index);
     mMap->insertTileset(index, tileset);
-    TilesetManager *tilesetManager = TilesetManager::instance();
-    tilesetManager->addReference(tileset);
     emit tilesetAdded(index, tileset);
 }
 
@@ -436,11 +426,9 @@ void MapDocument::insertTileset(int index, Tileset *tileset)
 void MapDocument::removeTilesetAt(int index)
 {
     emit tilesetAboutToBeRemoved(index);
-    Tileset *tileset = mMap->tilesets().at(index);
+    QSharedPointer<Tileset> tileset = mMap->tilesets().at(index);
     mMap->removeTilesetAt(index);
     emit tilesetRemoved(tileset);
-    TilesetManager *tilesetManager = TilesetManager::instance();
-    tilesetManager->removeReference(tileset);
 }
 
 void MapDocument::moveTileset(int from, int to)
@@ -448,7 +436,7 @@ void MapDocument::moveTileset(int from, int to)
     if (from == to)
         return;
 
-    Tileset *tileset = mMap->tilesets().at(from);
+    QSharedPointer<Tileset> tileset = mMap->tilesets().at(from);
     mMap->removeTilesetAt(from);
     mMap->insertTileset(to, tileset);
     emit tilesetMoved(from, to);
@@ -480,15 +468,14 @@ void MapDocument::setSelectedObjects(const QList<MapObject *> &selectedObjects)
 void MapDocument::unifyTilesets(Map *map)
 {
     QList<QUndoCommand*> undoCommands;
-    QList<Tileset*> existingTilesets = mMap->tilesets();
-    TilesetManager *tilesetManager = TilesetManager::instance();
+    QList<QSharedPointer<Tileset> > existingTilesets = mMap->tilesets();
 
     // Add tilesets that are not yet part of this map
-    foreach (Tileset *tileset, map->tilesets()) {
+    foreach (QSharedPointer<Tileset> tileset, map->tilesets()) {
         if (existingTilesets.contains(tileset))
             continue;
 
-        Tileset *replacement = tileset->findSimilarTileset(existingTilesets);
+        QSharedPointer<Tileset> replacement = tileset->findSimilarTileset(existingTilesets);
         if (!replacement) {
             undoCommands.append(new AddTileset(this, tileset));
             continue;
@@ -506,9 +493,6 @@ void MapDocument::unifyTilesets(Map *map)
                                                      properties));
         }
         map->replaceTileset(tileset, replacement);
-
-        tilesetManager->addReference(replacement);
-        tilesetManager->removeReference(tileset);
     }
     if (!undoCommands.isEmpty()) {
         mUndoStack->beginMacro(tr("Tileset Changes"));
@@ -603,7 +587,7 @@ void MapDocument::setTilesetFileName(Tileset *tileset,
     emit tilesetFileNameChanged(tileset);
 }
 
-void MapDocument::setTilesetName(Tileset *tileset, const QString &name)
+void MapDocument::setTilesetName(QSharedPointer<Tileset> tileset, const QString &name)
 {
     tileset->setName(name);
     emit tilesetNameChanged(tileset);

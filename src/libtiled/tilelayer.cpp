@@ -1,4 +1,4 @@
-/* 
+/*
  * tilelayer.cpp
  * Copyright 2008-2011, Thorbjørn Lindeijer <thorbjorn@lindeijer.nl>
  * Copyright 2009, Jeff Bland <jksb@member.fsf.org>
@@ -240,13 +240,13 @@ void TileLayer::rotate(RotateDirection direction)
 }
 
 
-QSet<Tileset*> TileLayer::usedTilesets() const
+QSet<QSharedPointer<Tileset> > TileLayer::usedTilesets() const
 {
-    QSet<Tileset*> tilesets;
+    QSet<QSharedPointer<Tileset> > tilesets;
 
     for (int i = 0, i_end = mGrid.size(); i < i_end; ++i)
         if (const Tile *tile = mGrid.at(i).tile)
-            tilesets.insert(tile->tileset());
+            tilesets.insert(tile->tileset()->hackity_hack);
 
     return tilesets;
 }

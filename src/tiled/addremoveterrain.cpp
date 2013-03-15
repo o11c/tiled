@@ -31,7 +31,7 @@ using namespace Tiled;
 using namespace Tiled::Internal;
 
 AddRemoveTerrain::AddRemoveTerrain(MapDocument *mapDocument,
-                                   Tileset *tileset,
+                                   QSharedPointer<Tileset> tileset,
                                    int index,
                                    Terrain *terrain)
     : mMapDocument(mapDocument)
@@ -62,7 +62,7 @@ void AddRemoveTerrain::addTerrain()
 
 AddTerrain::AddTerrain(MapDocument *mapDocument, Terrain *terrain)
     : AddRemoveTerrain(mapDocument,
-                       terrain->tileset(),
+                       terrain->tileset()->hackity_hack,
                        terrain->tileset()->terrainCount(),
                        terrain)
 {
@@ -72,7 +72,7 @@ AddTerrain::AddTerrain(MapDocument *mapDocument, Terrain *terrain)
 
 RemoveTerrain::RemoveTerrain(MapDocument *mapDocument, Terrain *terrain)
     : AddRemoveTerrain(mapDocument,
-                       terrain->tileset(),
+                       terrain->tileset()->hackity_hack,
                        terrain->id(),
                        0)
 {

@@ -181,8 +181,8 @@ void MapWriterPrivate::writeMap(QXmlStreamWriter &w, const Map *map)
 
     mGidMapper.clear();
     unsigned firstGid = 1;
-    foreach (Tileset *tileset, map->tilesets()) {
-        writeTileset(w, tileset, firstGid);
+    foreach (QSharedPointer<Tileset> tileset, map->tilesets()) {
+        writeTileset(w, tileset.data(), firstGid);
         mGidMapper.insert(firstGid, tileset);
         firstGid += tileset->tileCount();
     }

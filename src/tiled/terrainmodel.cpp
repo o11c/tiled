@@ -42,7 +42,7 @@ class RenameTerrain : public QUndoCommand
 {
 public:
     RenameTerrain(MapDocument *mapDocument,
-                  Tileset *tileset,
+                  QSharedPointer<Tileset> tileset,
                   int terrainId,
                   const QString &newName)
         : QUndoCommand(QCoreApplication::translate("Undo Commands",
@@ -55,14 +55,14 @@ public:
     {}
 
     void undo()
-    { mTerrainModel->setTerrainName(mTileset, mTerrainId, mOldName); }
+    { mTerrainModel->setTerrainName(mTileset.data(), mTerrainId, mOldName); }
 
     void redo()
-    { mTerrainModel->setTerrainName(mTileset, mTerrainId, mNewName); }
+    { mTerrainModel->setTerrainName(mTileset.data(), mTerrainId, mNewName); }
 
 private:
     TerrainModel *mTerrainModel;
-    Tileset *mTileset;
+    QSharedPointer<Tileset> mTileset;
     int mTerrainId;
     QString mOldName;
     QString mNewName;
@@ -77,14 +77,14 @@ TerrainModel::TerrainModel(MapDocument *mapDocument,
 {
     connect(mapDocument, SIGNAL(tilesetAboutToBeAdded(int)),
             this, SLOT(tilesetAboutToBeAdded(int)));
-    connect(mapDocument, SIGNAL(tilesetAdded(int,Tileset*)),
+    connect(mapDocument, SIGNAL(tilesetAdded(int,QSharedPointer<Tileset>)),
             this, SLOT(tilesetAdded()));
     connect(mapDocument, SIGNAL(tilesetAboutToBeRemoved(int)),
             this, SLOT(tilesetAboutToBeRemoved(int)));
-    connect(mapDocument, SIGNAL(tilesetRemoved(Tileset*)),
+    connect(mapDocument, SIGNAL(tilesetRemoved(QSharedPointer<Tileset>)),
             this, SLOT(tilesetRemoved()));
-    connect(mapDocument, SIGNAL(tilesetNameChanged(Tileset*)),
-            this, SLOT(tilesetNameChanged(Tileset*)));
+    connect(mapDocument, SIGNAL(tilesetNameChanged(QSharedPointer<Tileset>)),
+            this, SLOT(tilesetNameChanged(QSharedPointer<Tileset>)));
 }
 
 TerrainModel::~TerrainModel()
@@ -98,13 +98,13 @@ QModelIndex TerrainModel::index(int row, int column, const QModelIndex &parent) 
 
     if (!parent.isValid())
         return createIndex(row, column);
-    else if (Tileset *tileset = tilesetAt(parent))
-        return createIndex(row, column, tileset);
+    else if (QSharedPointer<Tileset> tileset = tilesetAt(parent))
+        return createIndex(row, column, static_cast<void *>(tileset.data()));
 
     return QModelIndex();
 }
 
-QModelIndex TerrainModel::index(Tileset *tileset) const
+QModelIndex TerrainModel::index(QSharedPointer<Tileset> tileset) const
 {
     int row = mMapDocument->map()->tilesets().indexOf(tileset);
     Q_ASSERT(row != -1);
@@ -115,13 +115,13 @@ QModelIndex TerrainModel::index(Terrain *terrain) const
 {
     Tileset *tileset = terrain->tileset();
     int row = tileset->terrains().indexOf(terrain);
-    return createIndex(row, 0, tileset);
+    return createIndex(row, 0, static_cast<void *>(tileset));
 }
 
 QModelIndex TerrainModel::parent(const QModelIndex &child) const
 {
     if (Terrain *terrain = terrainAt(child))
-        return index(terrain->tileset());
+        return index(terrain->tileset()->hackity_hack);
 
     return QModelIndex();
 }
@@ -130,7 +130,7 @@ int TerrainModel::rowCount(const QModelIndex &parent) const
 {
     if (!parent.isValid())
         return mMapDocument->map()->tilesetCount();
-    else if (Tileset *tileset = tilesetAt(parent))
+    else if (QSharedPointer<Tileset> tileset = tilesetAt(parent))
         return tileset->terrainCount();
 
     return 0;
@@ -156,7 +156,7 @@ QVariant TerrainModel::data(const QModelIndex &index, int role) const
         case TerrainRole:
             return QVariant::fromValue(terrain);
         }
-    } else if (Tileset *tileset = tilesetAt(index)) {
+    } else if (QSharedPointer<Tileset> tileset = tilesetAt(index)) {
         switch (role) {
         case Qt::DisplayRole:
             return tileset->name();
@@ -186,7 +186,7 @@ bool TerrainModel::setData(const QModelIndex &index,
         Terrain *terrain = terrainAt(index);
         if (terrain->name() != newName) {
             RenameTerrain *rename = new RenameTerrain(mMapDocument,
-                                                      terrain->tileset(),
+                                                      terrain->tileset()->hackity_hack,
                                                       terrain->id(),
                                                       newName);
             mMapDocument->undoStack()->push(rename);
@@ -205,14 +205,14 @@ Qt::ItemFlags TerrainModel::flags(const QModelIndex &index) const
     return rc;
 }
 
-Tileset *TerrainModel::tilesetAt(const QModelIndex &index) const
+QSharedPointer<Tileset> TerrainModel::tilesetAt(const QModelIndex &index) const
 {
     if (!index.isValid())
-        return 0;
+        return QSharedPointer<Tileset>();
     if (index.parent().isValid()) // tilesets don't have parents
-        return 0;
+        return QSharedPointer<Tileset>();
     if (index.row() >= mMapDocument->map()->tilesetCount())
-        return 0;
+        return QSharedPointer<Tileset>();
 
     return mMapDocument->map()->tilesetAt(index.row());
 }
@@ -232,14 +232,14 @@ Terrain *TerrainModel::terrainAt(const QModelIndex &index) const
  * Adds a terrain type to the given \a tileset at \a index. Emits the
  * appropriate signal.
  */
-void TerrainModel::insertTerrain(Tileset *tileset, int index, Terrain *terrain)
+void TerrainModel::insertTerrain(QSharedPointer<Tileset> tileset, int index, Terrain *terrain)
 {
     const QModelIndex tilesetIndex = TerrainModel::index(tileset);
 
     beginInsertRows(tilesetIndex, index, index);
     tileset->insertTerrain(index, terrain);
     endInsertRows();
-    emit terrainAdded(tileset, index);
+    emit terrainAdded(tileset.data(), index);
     emit dataChanged(tilesetIndex, tilesetIndex); // for TerrainFilterModel
 }
 
@@ -251,14 +251,14 @@ void TerrainModel::insertTerrain(Tileset *tileset, int index, Terrain *terrain)
  * \warning This will update terrain information of all the tiles in the
  *          tileset, clearing references to the removed terrain.
  */
-Terrain *TerrainModel::takeTerrainAt(Tileset *tileset, int index)
+Terrain *TerrainModel::takeTerrainAt(QSharedPointer<Tileset> tileset, int index)
 {
     const QModelIndex tilesetIndex = TerrainModel::index(tileset);
 
     beginRemoveRows(tilesetIndex, index, index);
     Terrain *terrain = tileset->takeTerrainAt(index);
     endRemoveRows();
-    emit terrainRemoved(tileset, index);
+    emit terrainRemoved(tileset.data(), index);
     emit dataChanged(tilesetIndex, tilesetIndex); // for TerrainFilterModel
 
     return terrain;
@@ -305,7 +305,7 @@ void TerrainModel::tilesetRemoved()
     endRemoveRows();
 }
 
-void TerrainModel::tilesetNameChanged(Tileset *tileset)
+void TerrainModel::tilesetNameChanged(QSharedPointer<Tileset> tileset)
 {
     const QModelIndex index = TerrainModel::index(tileset);
     emit dataChanged(index, index);

@@ -21,6 +21,7 @@
 #ifndef ADDREMOVETERRAIN_H
 #define ADDREMOVETERRAIN_H
 
+#include <QSharedPointer>
 #include <QUndoCommand>
 
 namespace Tiled {
@@ -39,7 +40,7 @@ class AddRemoveTerrain : public QUndoCommand
 {
 public:
     AddRemoveTerrain(MapDocument *mapDocument,
-                     Tileset *tileset,
+                     QSharedPointer<Tileset> tileset,
                      int index,
                      Terrain *terrain);
     ~AddRemoveTerrain();
@@ -50,7 +51,7 @@ protected:
 
 private:
     MapDocument *mMapDocument;
-    Tileset *mTileset;
+    QSharedPointer<Tileset> mTileset;
     int mIndex;
     Terrain *mTerrain;
 };

@@ -75,7 +75,7 @@ class SetTilesetFileName : public QUndoCommand
 {
 public:
     SetTilesetFileName(MapDocument *mapDocument,
-                       Tileset *tileset,
+                       QSharedPointer<Tileset> tileset,
                        const QString &fileName)
         : mMapDocument(mapDocument)
         , mTileset(tileset)
@@ -96,12 +96,12 @@ private:
     void swap()
     {
         QString previousFileName = mTileset->fileName();
-        mMapDocument->setTilesetFileName(mTileset, mFileName);
+        mMapDocument->setTilesetFileName(mTileset.data(), mFileName);
         mFileName = previousFileName;
     }
 
     MapDocument *mMapDocument;
-    Tileset *mTileset;
+    QSharedPointer<Tileset> mTileset;
     QString mFileName;
 };
 
@@ -109,7 +109,7 @@ class RenameTileset : public QUndoCommand
 {
 public:
     RenameTileset(MapDocument *mapDocument,
-                  Tileset *tileset,
+                  QSharedPointer<Tileset> tileset,
                   const QString &newName)
         : QUndoCommand(QCoreApplication::translate("Undo Commands",
                                                    "Change Tileset Name"))
@@ -124,7 +124,7 @@ public:
 
 private:
     MapDocument *mMapDocument;
-    Tileset *mTileset;
+    QSharedPointer<Tileset> mTileset;
     QString mOldName;
     QString mNewName;
 };
@@ -251,8 +251,8 @@ TilesetDock::TilesetDock(QWidget *parent):
     connect(mViewStack, SIGNAL(currentChanged(int)),
             this, SLOT(updateCurrentTiles()));
 
-    connect(TilesetManager::instance(), SIGNAL(tilesetChanged(Tileset*)),
-            this, SLOT(tilesetChanged(Tileset*)));
+    connect(TilesetManager::instance(), SIGNAL(tilesetChanged(QSharedPointer<Tileset>)),
+            this, SLOT(tilesetChanged(QSharedPointer<Tileset>)));
 
     connect(DocumentManager::instance(), SIGNAL(documentCloseRequested(int)),
             SLOT(documentCloseRequested(int)));
@@ -304,7 +304,7 @@ void TilesetDock::setMapDocument(MapDocument *mapDocument)
     if (mMapDocument) {
         mTilesets = mMapDocument->map()->tilesets();
 
-        foreach (Tileset *tileset, mTilesets) {
+        foreach (QSharedPointer<Tileset> tileset, mTilesets) {
             TilesetView *view = new TilesetView;
             view->setMapDocument(mMapDocument);
             view->setZoomable(mZoomable);
@@ -313,14 +313,14 @@ void TilesetDock::setMapDocument(MapDocument *mapDocument)
             mViewStack->addWidget(view);
         }
 
-        connect(mMapDocument, SIGNAL(tilesetAdded(int,Tileset*)),
-                SLOT(tilesetAdded(int,Tileset*)));
-        connect(mMapDocument, SIGNAL(tilesetRemoved(Tileset*)),
-                SLOT(tilesetRemoved(Tileset*)));
+        connect(mMapDocument, SIGNAL(tilesetAdded(int,QSharedPointer<Tileset>)),
+                SLOT(tilesetAdded(int,QSharedPointer<Tileset>)));
+        connect(mMapDocument, SIGNAL(tilesetRemoved(QSharedPointer<Tileset>)),
+                SLOT(tilesetRemoved(QSharedPointer<Tileset>)));
         connect(mMapDocument, SIGNAL(tilesetMoved(int,int)),
                 SLOT(tilesetMoved(int,int)));
-        connect(mMapDocument, SIGNAL(tilesetNameChanged(Tileset*)),
-                SLOT(tilesetNameChanged(Tileset*)));
+        connect(mMapDocument, SIGNAL(tilesetNameChanged(QSharedPointer<Tileset>)),
+                SLOT(tilesetNameChanged(QSharedPointer<Tileset>)));
         connect(mMapDocument, SIGNAL(tilesetFileNameChanged(Tileset*)),
                 SLOT(updateActions()));
 
@@ -380,7 +380,7 @@ void TilesetDock::updateActions()
     if (index > -1) {
         view = tilesetViewAt(index);
         if (view) {
-            Tileset *tileset = mTilesets.at(index);
+            QSharedPointer<Tileset> tileset = mTilesets.at(index);
 
             if (!view->model()) {
                 // Lazily set up the model
@@ -446,7 +446,7 @@ void TilesetDock::updateCurrentTiles()
     setCurrentTile(model->tileAt(s->currentIndex()));
 }
 
-void TilesetDock::tilesetAdded(int index, Tileset *tileset)
+void TilesetDock::tilesetAdded(int index, QSharedPointer<Tileset> tileset)
 {
     TilesetView *view = new TilesetView;
     view->setMapDocument(mMapDocument);
@@ -459,7 +459,7 @@ void TilesetDock::tilesetAdded(int index, Tileset *tileset)
     updateActions();
 }
 
-void TilesetDock::tilesetChanged(Tileset *tileset)
+void TilesetDock::tilesetChanged(QSharedPointer<Tileset> tileset)
 {
     // Update the affected tileset model, if it exists
     const int index = mTilesets.indexOf(tileset);
@@ -470,7 +470,7 @@ void TilesetDock::tilesetChanged(Tileset *tileset)
         model->tilesetChanged();
 }
 
-void TilesetDock::tilesetRemoved(Tileset *tileset)
+void TilesetDock::tilesetRemoved(QSharedPointer<Tileset> tileset)
 {
     // Delete the related tileset view
     const int index = mTilesets.indexOf(tileset);
@@ -485,7 +485,7 @@ void TilesetDock::tilesetRemoved(Tileset *tileset)
         // TODO: Don't clean unnecessarily (but first the concept of
         //       "current brush" would need to be introduced)
         TileLayer *cleaned = static_cast<TileLayer *>(mCurrentTiles->clone());
-        cleaned->removeReferencesToTileset(tileset);
+        cleaned->removeReferencesToTileset(tileset.data());
         setCurrentTiles(cleaned);
     }
     if (mCurrentTile && mCurrentTile->tileset() == tileset)
@@ -508,7 +508,7 @@ void TilesetDock::tilesetMoved(int from, int to)
     const int start = qMin(from, to);
     const int end = qMax(from, to);
     for (int i = start; i <= end; ++i) {
-        const Tileset *tileset = mTilesets.at(i);
+        QSharedPointer<const Tileset> tileset = mTilesets.at(i);
         if (mTabBar->tabText(i) != tileset->name())
             mTabBar->setTabText(i, tileset->name());
     }
@@ -530,8 +530,8 @@ void TilesetDock::removeTileset()
  */
 void TilesetDock::removeTileset(int index)
 {
-    Tileset *tileset = mTilesets.at(index);
-    const bool inUse = mMapDocument->map()->isTilesetUsed(tileset);
+    QSharedPointer<Tileset> tileset = mTilesets.at(index);
+    const bool inUse = mMapDocument->map()->isTilesetUsed(tileset.data());
 
     // If the tileset is in use, warn the user and confirm removal
     if (inUse) {
@@ -557,7 +557,7 @@ void TilesetDock::removeTileset(int index)
         undoStack->beginMacro(remove->text());
         foreach (Layer *layer, mMapDocument->map()->layers()) {
             if (TileLayer *tileLayer = layer->asTileLayer()) {
-                const QRegion refs = tileLayer->tilesetReferences(tileset);
+                const QRegion refs = tileLayer->tilesetReferences(tileset.data());
                 if (!refs.isEmpty()) {
                     undoStack->push(new EraseTiles(mMapDocument,
                                                    tileLayer, refs));
@@ -565,7 +565,7 @@ void TilesetDock::removeTileset(int index)
             } else if (ObjectGroup *objectGroup = layer->asObjectGroup()) {
                 foreach (MapObject *object, objectGroup->objects()) {
                     const Tile *tile = object->cell().tile;
-                    if (tile && tile->tileset() == tileset) {
+                    if (tile && tile->tileset() == tileset.data()) {
                         undoStack->push(new RemoveMapObject(mMapDocument,
                                                             object));
                     }
@@ -615,11 +615,11 @@ void TilesetDock::retranslateUi()
     mEditTerrain->setText(tr("Edit &Terrain Information"));
 }
 
-Tileset *TilesetDock::currentTileset() const
+QSharedPointer<Tileset> TilesetDock::currentTileset() const
 {
     const int index = mTabBar->currentIndex();
     if (index == -1)
-        return 0;
+        return QSharedPointer<Tileset>();
 
     return mTilesets.at(index);
 }
@@ -636,12 +636,12 @@ TilesetView *TilesetDock::tilesetViewAt(int index) const
 
 void TilesetDock::editTilesetProperties()
 {
-    Tileset *tileset = currentTileset();
+    QSharedPointer<Tileset> tileset = currentTileset();
     if (!tileset)
         return;
 
     PropertiesDialog propertiesDialog(tr("Tileset"),
-                                      tileset,
+                                      tileset.data(),
                                       mMapDocument->undoStack(),
                                       this);
     propertiesDialog.exec();
@@ -649,7 +649,7 @@ void TilesetDock::editTilesetProperties()
 
 void TilesetDock::exportTileset()
 {
-    Tileset *tileset = currentTileset();
+    QSharedPointer<Tileset> tileset = currentTileset();
     if (!tileset)
         return;
 
@@ -669,7 +669,7 @@ void TilesetDock::exportTileset()
 
     TmxMapWriter writer;
 
-    if (writer.writeTileset(tileset, fileName)) {
+    if (writer.writeTileset(tileset.data(), fileName)) {
         QUndoCommand *command = new SetTilesetFileName(mMapDocument,
                                                        tileset, fileName);
         mMapDocument->undoStack()->push(command);
@@ -678,7 +678,7 @@ void TilesetDock::exportTileset()
 
 void TilesetDock::importTileset()
 {
-    Tileset *tileset = currentTileset();
+    QSharedPointer<Tileset> tileset = currentTileset();
     if (!tileset)
         return;
 
@@ -706,7 +706,7 @@ void TilesetDock::renameTileset()
 
 void TilesetDock::editTerrain()
 {
-    Tileset *tileset = currentTileset();
+    QSharedPointer<Tileset> tileset = currentTileset();
     if (!tileset)
         return;
 
@@ -714,7 +714,7 @@ void TilesetDock::editTerrain()
     editTerrainDialog.exec();
 }
 
-void TilesetDock::tilesetNameChanged(Tileset *tileset)
+void TilesetDock::tilesetNameChanged(QSharedPointer<Tileset> tileset)
 {
     const int index = mTilesets.indexOf(tileset);
     Q_ASSERT(index != -1);

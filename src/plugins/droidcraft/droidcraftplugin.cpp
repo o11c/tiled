@@ -62,7 +62,8 @@ Tiled::Map *DroidcraftPlugin::read(const QString &fileName)
     // -> Create a TileLayer -> Fill layer -> Add TileLayer to Map
     Map *map = new Map(Map::Orthogonal, 48, 48, 32, 32);
 
-    Tileset *mapTileset = new Tileset("tileset", 32, 32);
+    QSharedPointer<Tileset> mapTileset = QSharedPointer<Tileset>(new Tileset("tileset", 32, 32));
+    mapTileset->hackity_hack = mapTileset;
     mapTileset->loadFromImage(QImage(":/tileset.png"), "tileset.png");
     map->addTileset(mapTileset);
 

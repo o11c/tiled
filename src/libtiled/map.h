@@ -33,6 +33,7 @@
 
 #include "layer.h"
 #include "object.h"
+#include "tileset.h"
 
 #include <QColor>
 #include <QList>
@@ -235,18 +236,18 @@ public:
      *
      * @param tileset the tileset to add
      */
-    void addTileset(Tileset *tileset);
+    void addTileset(QSharedPointer<Tileset> tileset);
 
     /**
      * Inserts \a tileset at \a index in the list of tilesets used by this map.
      */
-    void insertTileset(int index, Tileset *tileset);
+    void insertTileset(int index, QSharedPointer<Tileset> tileset);
 
     /**
      * Returns the index of the given \a tileset, or -1 if it is not used in
      * this map.
      */
-    int indexOfTileset(Tileset *tileset) const;
+    int indexOfTileset(QSharedPointer<Tileset> tileset) const;
 
     /**
      * Removes the tileset at \a index from this map.
@@ -263,7 +264,7 @@ public:
      * Also replaces the old tileset with the new tileset in the list of
      * tilesets.
      */
-    void replaceTileset(Tileset *oldTileset, Tileset *newTileset);
+    void replaceTileset(QSharedPointer<Tileset> oldTileset, QSharedPointer<Tileset> newTileset);
 
     /**
      * Returns the number of tilesets of this map.
@@ -273,12 +274,12 @@ public:
     /**
      * Returns the tileset at the given index.
      */
-    Tileset *tilesetAt(int index) const { return mTilesets.at(index); }
+    QSharedPointer<Tileset> tilesetAt(int index) const { return mTilesets.at(index); }
 
     /**
      * Returns the tilesets that the tiles on this map are using.
      */
-    const QList<Tileset*> &tilesets() const { return mTilesets; }
+    const QList<QSharedPointer<Tileset> > &tilesets() const { return mTilesets; }
 
     /**
      * Returns the background color of this map.
@@ -324,7 +325,7 @@ private:
     QColor mBackgroundColor;
     QMargins mDrawMargins;
     QList<Layer*> mLayers;
-    QList<Tileset*> mTilesets;
+    QList<QSharedPointer<Tileset> > mTilesets;
     LayerDataFormat mLayerDataFormat;
 };
 

@@ -105,11 +105,9 @@ void QuickStampManager::saveQuickStamp(int index)
 
     copyMap->addLayer(copy);
 
-    // Add tileset references to map and tileset manager
-    TilesetManager *tilesetManager = TilesetManager::instance();
-    foreach (Tileset *tileset, copy->usedTilesets()) {
+    // Add tileset references to map
+    foreach (QSharedPointer<Tileset> tileset, copy->usedTilesets()) {
         copyMap->addTileset(tileset);
-        tilesetManager->addReference(tileset);
     }
 
     eraseQuickStamp(index);
@@ -125,9 +123,6 @@ void QuickStampManager::cleanQuickStamps()
 void QuickStampManager::eraseQuickStamp(int index)
 {
     if (Map *quickStamp = mQuickStamps.at(index)) {
-        // Decrease reference to tilesets
-        TilesetManager *tilesetManager = TilesetManager::instance();
-        tilesetManager->removeReferences(quickStamp->tilesets());
         delete quickStamp;
     }
 }

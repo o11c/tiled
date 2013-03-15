@@ -22,6 +22,7 @@
 #define CHANGETILETERRAIN_H
 
 #include <QMap>
+#include <QSharedPointer>
 #include <QUndoCommand>
 
 #include "undocommands.h"
@@ -77,7 +78,7 @@ private:
     void initText();
 
     MapDocument *mMapDocument;
-    Tileset *mTileset;
+    QSharedPointer<Tileset> mTileset;
     Changes mChanges;
     bool mMergeable;
 };

@@ -32,6 +32,7 @@
 #include "tiled_global.h"
 
 #include <QImage>
+#include <QSharedPointer>
 
 class QFile;
 
@@ -79,16 +80,14 @@ public:
      * images.
      *
      * Returns 0 and sets errorString() when reading failed.
-     *
-     * The caller takes ownership over the newly created tileset.
      */
-    Tileset *readTileset(QIODevice *device, const QString &path = QString());
+    QSharedPointer<Tileset> readTileset(QIODevice *device, const QString &path = QString());
 
     /**
      * Reads a TSX tileset from the given \a fileName.
      * \overload
      */
-    Tileset *readTileset(const QString &fileName);
+    QSharedPointer<Tileset> readTileset(const QString &fileName);
 
     /**
      * Returns the error message for the last occurred error.
@@ -116,7 +115,7 @@ protected:
      * If an error occurred, the \a error parameter should be set to the error
      * message.
      */
-    virtual Tileset *readExternalTileset(const QString &source,
+    virtual QSharedPointer<Tileset> readExternalTileset(const QString &source,
                                          QString *error);
 
 private:

@@ -184,9 +184,6 @@ bool AutomappingManager::loadFile(const QString &filePath)
                 continue;
             }
 
-            TilesetManager *tilesetManager = TilesetManager::instance();
-            tilesetManager->addReferences(rules->tilesets());
-
             AutoMapper *autoMapper;
             autoMapper = new AutoMapper(mMapDocument, rules, rulePath);
 

@@ -93,10 +93,10 @@ bool Tileset::loadFromImage(const QImage &image, const QString &fileName)
     return true;
 }
 
-Tileset *Tileset::findSimilarTileset(const QList<Tileset*> &tilesets) const
+QSharedPointer<Tileset> Tileset::findSimilarTileset(const QList<QSharedPointer<Tileset> > &tilesets) const
 {
-    foreach (Tileset *candidate, tilesets) {
-        if (candidate != this
+    foreach (QSharedPointer<Tileset> candidate, tilesets) {
+        if (candidate.data() != this
             && candidate->imageSource() == imageSource()
             && candidate->tileWidth() == tileWidth()
             && candidate->tileHeight() == tileHeight()
@@ -105,7 +105,7 @@ Tileset *Tileset::findSimilarTileset(const QList<Tileset*> &tilesets) const
                 return candidate;
         }
     }
-    return 0;
+    return QSharedPointer<Tileset>();
 }
 
 int Tileset::columnCountForWidth(int width) const

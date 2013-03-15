@@ -25,9 +25,12 @@
 #include <QObject>
 #include <QList>
 #include <QMap>
+#include <QSharedPointer>
 #include <QString>
 #include <QSet>
 #include <QTimer>
+
+#include "../libtiled/tileset.h"
 
 namespace Tiled {
 
@@ -75,47 +78,23 @@ public:
      * Searches for a tileset matching the given file name.
      * @return a tileset matching the given file name, or 0 if none exists
      */
-    Tileset *findTileset(const QString &fileName) const;
+    QSharedPointer<Tileset> findTileset(const QString &fileName) const;
 
     /**
      * Searches for a tileset matching the given specification.
      * @return a tileset matching the given specification, or 0 if none exists
      */
-    Tileset *findTileset(const TilesetSpec &spec) const;
-
-    /**
-     * Adds a tileset reference. This will make sure the tileset doesn't get
-     * deleted.
-     */
-    void addReference(Tileset *tileset);
-
-    /**
-     * Removes a tileset reference. This needs to be done before a tileset can
-     * be deleted.
-     */
-    void removeReference(Tileset *tileset);
-
-    /**
-     * Convenience method to add references to multiple tilesets.
-     * @see addReference
-     */
-    void addReferences(const QList<Tileset*> &tilesets);
-
-    /**
-     * Convenience method to remove references from multiple tilesets.
-     * @see removeReference
-     */
-    void removeReferences(const QList<Tileset*> &tilesets);
+    QSharedPointer<Tileset> findTileset(const TilesetSpec &spec) const;
 
     /**
      * Returns all currently available tilesets.
      */
-    QList<Tileset*> tilesets() const;
+    QList<QSharedPointer<Tileset> > tilesets() const;
 
     /**
      * Forces a tileset to reload.
      */
-    void forceTilesetReload(Tileset *tileset);
+    void forceTilesetReload(QSharedPointer<Tileset> tileset);
 
     /**
      * Sets whether tilesets are automatically reloaded when their tileset
@@ -130,7 +109,7 @@ signals:
     /**
      * Emitted when a tileset's images have changed and views need updating.
      */
-    void tilesetChanged(Tileset *tileset);
+    void tilesetChanged(QSharedPointer<Tileset> tileset);
 
 private slots:
     void fileChanged(const QString &path);
@@ -151,10 +130,7 @@ private:
 
     static TilesetManager *mInstance;
 
-    /**
-     * Stores the tilesets and maps them to the number of references.
-     */
-    QMap<Tileset*, int> mTilesets;
+    QSet<QSharedPointer<Tileset> > mTilesets;
     FileSystemWatcher *mWatcher;
     QSet<QString> mChangedFiles;
     QTimer mChangedFilesTimer;

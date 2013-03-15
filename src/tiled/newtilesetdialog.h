@@ -56,7 +56,7 @@ public:
      * Shows the dialog and returns the created tileset. Returns 0 if the
      * dialog was cancelled.
      */
-    Tileset *createTileset();
+    QSharedPointer<Tileset> createTileset();
 
 private slots:
     void browse();
@@ -68,7 +68,7 @@ private:
     QString mPath;
     Ui::NewTilesetDialog *mUi;
     bool mNameWasEdited;
-    Tileset *mNewTileset;
+    QSharedPointer<Tileset> mNewTileset;
 };
 
 } // namespace Internal

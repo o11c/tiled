@@ -28,7 +28,7 @@
 using namespace Tiled;
 using namespace Tiled::Internal;
 
-TilesetModel::TilesetModel(Tileset *tileset, QObject *parent):
+TilesetModel::TilesetModel(QSharedPointer<Tileset> tileset, QObject *parent):
     QAbstractListModel(parent),
     mTileset(tileset)
 {
@@ -106,7 +106,7 @@ QModelIndex TilesetModel::tileIndex(const Tile *tile) const
     return index(row, column);
 }
 
-void TilesetModel::setTileset(Tileset *tileset)
+void TilesetModel::setTileset(QSharedPointer<Tileset> tileset)
 {
     if (mTileset == tileset)
         return;

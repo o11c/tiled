@@ -98,10 +98,10 @@ void NewTilesetDialog::setTileHeight(int height)
     mUi->tileHeight->setValue(height);
 }
 
-Tileset *NewTilesetDialog::createTileset()
+QSharedPointer<Tileset> NewTilesetDialog::createTileset()
 {
     if (exec() != QDialog::Accepted)
-        return 0;
+        return QSharedPointer<Tileset>();
 
     return mNewTileset;
 }
@@ -119,9 +119,10 @@ void NewTilesetDialog::tryAccept()
     const QPoint offset = QPoint(mUi->offsetX->value(),
                                  mUi->offsetY->value());
 
-    std::auto_ptr<Tileset> tileset(new Tileset(name,
+    QSharedPointer<Tileset> tileset(new Tileset(name,
                                                tileWidth, tileHeight,
                                                spacing, margin));
+    tileset->hackity_hack = tileset;
 
     tileset->setTileOffset(offset);
 
@@ -151,7 +152,7 @@ void NewTilesetDialog::tryAccept()
     s->setValue(QLatin1String(MARGIN_KEY), margin);
     s->setValue(QLatin1String(OFFSET_KEY), offset);
 
-    mNewTileset = tileset.release();
+    mNewTileset = tileset;
     accept();
 }
 

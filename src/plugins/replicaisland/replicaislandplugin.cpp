@@ -57,7 +57,7 @@ Tiled::Map *ReplicaIslandPlugin::read(const QString &fileName)
     in >> mapSignature >> layerCount >> backgroundIndex;
     if (in.status() == QDataStream::ReadPastEnd || mapSignature != 96) {
         mError = tr("Can't parse file header!");
-        return 0;        
+        return 0;
     }
 
     // Create our map, setting width and height to 0 until we load a layer.
@@ -65,7 +65,7 @@ Tiled::Map *ReplicaIslandPlugin::read(const QString &fileName)
     map->setProperty("background_index", QString::number(backgroundIndex));
 
     // Load our Tilesets.
-    QList<Tileset *> typeTilesets, tileIndexTilesets;
+    QList<QSharedPointer<Tileset> > typeTilesets, tileIndexTilesets;
     loadTilesetsFromResources(map, typeTilesets, tileIndexTilesets);
 
     // Load each of our layers.
@@ -79,7 +79,7 @@ Tiled::Map *ReplicaIslandPlugin::read(const QString &fileName)
         if (in.status() == QDataStream::ReadPastEnd || levelSignature != 42) {
             delete map;
             mError = tr("Can't parse layer header!");
-            return 0;        
+            return 0;
         }
 
         // Make sure our width and height are consistent.
@@ -102,7 +102,7 @@ Tiled::Map *ReplicaIslandPlugin::read(const QString &fileName)
         map->addLayer(layer);
 
         // Look up the tileset for this layer.
-        Tileset *tileset =
+        QSharedPointer<Tileset> tileset =
             tilesetForLayer(type, tileIndex, typeTilesets, tileIndexTilesets);
 
         // Read our tile data all at once.
@@ -111,7 +111,7 @@ Tiled::Map *ReplicaIslandPlugin::read(const QString &fileName)
         if (bytesRead != tileData.size()) {
             delete map;
             mError = tr("File ended in middle of layer!");
-            return 0;            
+            return 0;
         }
         quint8 *tp = reinterpret_cast<quint8 *>(tileData.data());
 
@@ -131,7 +131,7 @@ Tiled::Map *ReplicaIslandPlugin::read(const QString &fileName)
     if (in.status() != QDataStream::Ok || !in.atEnd()) {
         delete map;
         mError = tr("Unexpected data at end of file!");
-        return 0;        
+        return 0;
     }
 
     return map;
@@ -139,11 +139,11 @@ Tiled::Map *ReplicaIslandPlugin::read(const QString &fileName)
 
 void ReplicaIslandPlugin::loadTilesetsFromResources(
     Tiled::Map *map,
-    QList<Tiled::Tileset *> &typeTilesets,
-    QList<Tiled::Tileset *> &tileIndexTilesets)
+    QList<QSharedPointer<Tiled::Tileset> > &typeTilesets,
+    QList<QSharedPointer<Tiled::Tileset> > &tileIndexTilesets)
 {
     // Create tilesets for type 0 to 3, inclusive.
-    typeTilesets.append(NULL); // Use a tileIndexTileset.
+    typeTilesets.append(QSharedPointer<Tiled::Tileset>()); // Use a tileIndexTileset.
     typeTilesets.append(loadTilesetFromResource("collision_map"));
     typeTilesets.append(loadTilesetFromResource("objects"));
     typeTilesets.append(loadTilesetFromResource("hotspots"));
@@ -158,33 +158,34 @@ void ReplicaIslandPlugin::loadTilesetsFromResources(
     // The titletileset is also known as "lighting".
     tileIndexTilesets.append(loadTilesetFromResource("titletileset"));
     tileIndexTilesets.append(loadTilesetFromResource("tutorial"));
-    addTilesetsToMap(map, tileIndexTilesets);    
+    addTilesetsToMap(map, tileIndexTilesets);
 }
 
-Tiled::Tileset *
+QSharedPointer<Tiled::Tileset>
 ReplicaIslandPlugin::loadTilesetFromResource(const QString &name)
 {
     using namespace Tiled;
 
-    Tileset *tileset = new Tileset(name, 32, 32);
+    QSharedPointer<Tiled::Tileset> tileset = QSharedPointer<Tiled::Tileset>(new Tileset(name, 32, 32));
+    tileset->hackity_hack = tileset;
     tileset->loadFromImage(QImage(":/" + name + ".png"), name + ".png");
     return tileset;
 }
 
 void ReplicaIslandPlugin::addTilesetsToMap(Tiled::Map *map,
-                                           const QList<Tiled::Tileset *> &tilesets)
+                                           const QList<QSharedPointer<Tiled::Tileset> > &tilesets)
 {
     using namespace Tiled;
 
-    QList<Tileset *>::const_iterator i = tilesets.begin();
+    QList<QSharedPointer<Tileset> >::const_iterator i = tilesets.begin();
     for (; i != tilesets.end(); ++i)
         if (*i)
             map->addTileset(*i);
 }
 
-Tiled::Tileset *ReplicaIslandPlugin::tilesetForLayer(int type, int tileIndex,
-                                                     const QList<Tiled::Tileset *> &typeTilesets,
-                                                     const QList<Tiled::Tileset *> &tileIndexTilesets)
+QSharedPointer<Tiled::Tileset> ReplicaIslandPlugin::tilesetForLayer(int type, int tileIndex,
+                                                     const QList<QSharedPointer<Tiled::Tileset> > &typeTilesets,
+                                                     const QList<QSharedPointer<Tiled::Tileset> > &tileIndexTilesets)
 {
     if (type == 0)
         return tileIndexTilesets[tileIndex];
