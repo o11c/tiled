@@ -636,31 +636,71 @@ void MapReaderPrivate::decodeBinaryLayerData(TileLayer *tileLayer,
     }
 }
 
+static inline
+bool to_uint(QString::const_iterator b, QString::const_iterator e, unsigned *u)
+{
+    if (b == e)
+        return false;
+    unsigned val = 0;
+    while (b != e)
+    {
+        unsigned old_val = val;
+        val *= 10;
+        int digit = b->digitValue();
+        if (digit == -1)
+            return false;
+        val += digit;
+        if (old_val > val)
+            return false;
+        ++b;
+    }
+    *u = val;
+    return true;
+}
+
 void MapReaderPrivate::decodeCSVLayerData(TileLayer *tileLayer, const QString &text)
 {
-    QString trimText = text.trimmed();
-    QStringList tiles = trimText.split(QLatin1Char(','));
-
-    if (tiles.length() != tileLayer->width() * tileLayer->height()) {
-        xml.raiseError(tr("Corrupt layer data for layer '%1'")
-                       .arg(tileLayer->name()));
-        return;
-    }
-
+    QString::const_iterator begin = text.begin(), end = text.end();
     for (int y = 0; y < tileLayer->height(); y++) {
         for (int x = 0; x < tileLayer->width(); x++) {
-            bool conversionOk;
-            const unsigned gid = tiles.at(y * tileLayer->width() + x)
-                    .toUInt(&conversionOk);
-            if (!conversionOk) {
+            while (begin != end && begin->isSpace())
+                ++begin;
+            if (begin == end)
+                // too few CSV entries
+                goto corrupt;
+            // note: std::find returns end if it's not found
+            // this is exactly what we want
+            QString::const_iterator comma = std::find(begin, end, QLatin1Char(','));
+            QString::const_iterator intend = comma;
+            while (intend != begin && intend[-1].isSpace())
+                --intend;
+
+            unsigned gid;
+            if (!to_uint(begin, intend, &gid)) {
                 xml.raiseError(
                         tr("Unable to parse tile at (%1,%2) on layer '%3'")
-                               .arg(x + 1).arg(y + 1).arg(tileLayer->name()));
+                        .arg(x).arg(y).arg(tileLayer->name()));
                 return;
             }
             tileLayer->setCell(x, y, cellForGid(gid));
+
+            begin = comma;
+            if (begin != end)
+                ++begin;
         }
     }
+    while (begin != end && begin->isSpace())
+        ++begin;
+    if (begin != end)
+        // too many CSV entries
+        goto corrupt;
+    return;
+
+corrupt:
+    xml.raiseError(tr("Corrupt layer data for layer '%1'")
+            .arg(tileLayer->name()));
+    return;
+
 }
 
 Cell MapReaderPrivate::cellForGid(unsigned gid)
