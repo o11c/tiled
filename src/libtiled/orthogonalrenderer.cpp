@@ -36,6 +36,9 @@
 
 #include <cmath>
 
+#define GRID_SCALE_X 4
+#define GRID_SCALE_Y 16
+
 using namespace Tiled;
 
 QSize OrthogonalRenderer::mapSize() const
@@ -166,8 +169,8 @@ QPainterPath OrthogonalRenderer::shape(const MapObject *object) const
 void OrthogonalRenderer::drawGrid(QPainter *painter, const QRectF &rect,
                                   QColor gridColor) const
 {
-    const int tileWidth = map()->tileWidth();
-    const int tileHeight = map()->tileHeight();
+    const int tileWidth = map()->tileWidth() * GRID_SCALE_X;
+    const int tileHeight = map()->tileHeight() * GRID_SCALE_Y;
 
     if (tileWidth <= 0 || tileHeight <= 0)
         return;
